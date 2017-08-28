@@ -1,6 +1,7 @@
 const { URLSearchParams } = require('url');
 const coRequest = require('co-request')
 const co = require('co')
+const chalk = require('chalk')
 
 //rap接口校验
 function rapVerify(opts) {
