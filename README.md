@@ -1,11 +1,11 @@
 # mat-rap
 
-[![npm version](https://badge.fury.io/js/mat-rap.svg)](http://badge.fury.io/js/mat-rap)
+[![npm version](https://badge.fury.io/js/mat-rap-verify.svg)](http://badge.fury.io/js/mat-rap-verify)
 
 ## Installation
 
 ```sh
-npm install --save-dev mat-rap
+npm install --save-dev mat-rap-verify
 ```
 
 ## Usage
@@ -13,18 +13,20 @@ npm install --save-dev mat-rap
 ```javascript
 var mat = require('mat')
 var rap = require('mat-rap')
+var rapVerify = require('mat-rap-verify')
 
-mat.task('default', function () {
-  mat.use(rap({
-    projectId: '123',
-    ext: ['.json', '.do']
+mat.url([/api\//, /api2\//])
+  .use(rapVerify({
+      projectId: matProjectId,
+      rapVersion: rapVersion,
+      isRap: true
   }))
-})
+  .use(rap({
+      rapVersion: rapVersion,
+      projectId: matProjectId
+  }))
 ```
 
-```sh
-mat default
-```
 
 ## Options
 
@@ -34,8 +36,14 @@ mat default
 
   Rap平台对应建立的项目id
 
-- `ext`
+- `rapVersion`
   
-  type: array
+  type: string
 
-  调用的数据接口的后缀名，默认为`['.json']`
+  rap平台的版本，默认为`1`
+
+- `isRap`
+  
+  type: boolean
+
+  是否为rap模式，默认为`false`
