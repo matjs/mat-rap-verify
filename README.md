@@ -1,4 +1,4 @@
-# mat-rap
+# mat-rap-verify
 
 [![npm version](https://badge.fury.io/js/mat-rap-verify.svg)](http://badge.fury.io/js/mat-rap-verify)
 
