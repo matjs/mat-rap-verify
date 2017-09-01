@@ -2,6 +2,7 @@ const { URLSearchParams } = require('url');
 const coRequest = require('co-request')
 const co = require('co')
 const chalk = require('chalk')
+const diff = require('deep-diff').diff
 
 //rap接口校验
 function rapVerify(opts) {
@@ -15,7 +16,7 @@ function rapVerify(opts) {
 
     //formData: post/json参数
     //resBody: 接口返回的数据/buffer
-    this.getParsedBody = function (formData, resBody) {
+    this.getParsedBody = (formData, resBody) => {
       co(function* () {
 
         let rapUrl = `https://rap2api.alibaba-inc.com/interface/get?repositoryId=${opts.projectId}&method=${me.request.method}&url=${me.path}`
@@ -29,22 +30,23 @@ function rapVerify(opts) {
           return
         }
 
+        let _resBody
         try {
-          //兼容jsonp格式，如 jsonp18({"data":1})
-          resBody = JSON.parse(/[^{]*({.*})[^}]*/.exec(resBody.toString())[1])
+          _resBody = JSON.parse(resBody.toString())
         } catch (error) {
-          console.log(error)
-          resBody = {}
+          //兼容jsonp格式，如 jsonp18({"data":1})
+          let resBodyStr = /[^{]*({.*})[^}]*/.exec(resBody.toString())[1]
+          _resBody = JSON.parse(resBodyStr)
         }
 
         let params = new URLSearchParams(me.search)
         let rapApiData = rapApi.data
 
         //校验请求里的参数是否与rap上填写的一致
-        checkParams.call(me, opts, rapApiData, formData, resBody, params)
+        checkParams.call(me, opts, rapApiData, formData, _resBody, params)
 
         //递归校验真实接口返回里跟rap上定义的是否一致
-        checkResponse.call(me, opts, rapApiData, formData, resBody, params)
+        checkResponse.call(me, opts, rapApiData, formData, _resBody, params)
 
       })
     }
@@ -58,29 +60,43 @@ function rapVerify(opts) {
  * 校验请求里的参数是否与rap上填写的一致
  */
 function checkParams(opts, rapApiData, formData, resBody, params) {
-  let missingParams = []
+  formData = formData || {}
+  let missingParams = [] //缺少的参数
+  let redundanceParams = [] //冗余的参数
   let me = this
-  // console.log(this)
+  let rapApiDataReqParams = {}
 
-  rapApiData.requestProperties.forEach(function (param) {
-    //post里找form data
+  //将urlParams合并到formData
+  params.forEach((v, k) => {
+    formData[k] = v
+  })
+
+  //找缺少的入参
+  rapApiData.requestProperties.forEach((param) => {
+    rapApiDataReqParams[param.name] = true
+    //formdata/url里找参数
     if (formData && formData[param.name]) {
       return
     }
-
-    //url里的search找query
-    if (params.get(param.name)) {
-      return
-    }
     missingParams.push(param.name)
-    // console.log(`${chalk.red(` ✗ missing request param: ${param.name}`)} at ${chalk.grey(me.path)}`)
   })
 
-  if (missingParams.length) {
+  //查找冗余的入参
+  for (let key in formData) {
+    if (rapApiDataReqParams[key]) {
+      break
+    }
+    redundanceParams.push(key)
+  }
+
+  if (missingParams.length || redundanceParams.length) {
     console.log(chalk.red(`\n✗ 检测到有与rap上入参不匹配的接口：`))
     console.log(`  接口    ：${chalk.green(me.path)}`)
-    missingParams.forEach(function (param) {
-      console.log(`  缺少入参：${chalk.cyan(param)}`)
+    missingParams.forEach((param) => {
+      console.log(`  缺少入参：${chalk.magenta(param)}`)
+    })
+    redundanceParams.forEach((param) => {
+      console.log(`  冗余入参：${chalk.cyan(param)}`)
     })
     console.log(chalk.grey(`  接口详情：https://rap2.alibaba-inc.com/repository/editor?id=${rapApiData.repositoryId}&mod=${rapApiData.moduleId}&itf=${rapApiData.id}\n`))
   }
@@ -91,50 +107,76 @@ function checkParams(opts, rapApiData, formData, resBody, params) {
  * 递归校验真实接口返回里跟rap上定义的是否一致
  */
 function checkResponse(opts, rapApiData, formData, resBody, params) {
-  let missingResponseKeys = []
   let me = this
+  let rapDataObj = rapDataConvertToObj(rapApiData.responseProperties)//rap数据转为object
+  let missingKeys = [] //缺失的键值
+  let redundancyKeys = [] //冗余的键值
+  let diffs = diff(rapDataObj, resBody) //差异对比结果
+  let pathMap = {}
 
-  function responseKeyVerify(responseProperties, resObj, resPath) {
-    responseProperties.forEach(function (property) {
-      let _resPath = property.name
-      if (resPath !== '') {
-        _resPath = resPath + '.' + property.name
+  diffs.forEach(function (item) {
+    //数组的path里会带上数字索引值，去掉该值
+    for (let i = 0; i < item.path.length; i++) {
+      if (typeof item.path[i] === 'number') {
+        item.path.splice(i, 1)
+        i--
       }
+    }
 
-      if (resObj[property.name] === undefined) {
-        missingResponseKeys.push(_resPath)
-        // console.log(`${chalk.red(` ✗ missing response key: ${_resPath}`)} at ${chalk.grey(me.path)}`)
-        return
+    let path = item.path.join('.')
+    if (!pathMap[path]) {
+      if (item.kind === 'D') {//缺失的值
+        missingKeys.push(path)
+      } else if (item.kind === 'N') { //冗余的值
+        redundancyKeys.push(path)
       }
+    }
 
-      if (property.children && property.children.length) {
-
-        let _resObj = {}
-
-        if (property.type === 'Array') {
-          _resObj = resObj[property.name][0] //数组取第一个对象
-        } else {
-          _resObj = resObj[property.name]
-        }
-
-        responseKeyVerify(property.children, _resObj, _resPath)
-      }
-    })
-  }
+    pathMap[path] = true
+  })
 
   //非rap模拟接口时才校验
   if (!opts.isRap) {
-    responseKeyVerify(rapApiData.responseProperties, resBody, '')
-
-    if (missingResponseKeys.length) {
+    if (missingKeys.length || redundancyKeys.length) {
       console.log(chalk.red(`\n✗ 检测到有与rap上定义的响应数据不匹配的接口：`))
       console.log(`  接口    ：${chalk.green(me.path)}`)
-      missingResponseKeys.forEach(function (resPath) {
-        console.log(`  缺少键值：${chalk.cyan(resPath)}`)
+      missingKeys.forEach(function (resPath) {
+        console.log(`  缺少键值：${chalk.magenta(resPath)}`)
+      })
+      redundancyKeys.forEach(function (resPath) {
+        console.log(`  冗余键值：${chalk.cyan(resPath)}`)
       })
       console.log(chalk.grey(`  接口详情：https://rap2.alibaba-inc.com/repository/editor?id=${rapApiData.repositoryId}&mod=${rapApiData.moduleId}&itf=${rapApiData.id}\n`))
     }
   }
+
 }
+
+
+/**
+ * 将rap的完整数据转化为object对象
+ */
+function rapDataConvertToObj(rp) {
+  let obj = {}
+
+  //递归解析成object
+  function convertToObj(_rp, _obj) {
+    _rp.forEach(function (item) {
+      if (item.type === 'Object') {
+        _obj[item.name] = {}
+        convertToObj(item.children, _obj[item.name])
+      } else if (item.type === 'Array') {
+        _obj[item.name] = [{}]
+        convertToObj(item.children, _obj[item.name][0])
+      } else {
+        _obj[item.name] = true //随便设个值占位
+      }
+    })
+  }
+
+  convertToObj(rp, obj)
+  return obj
+}
+
 
 module.exports = rapVerify

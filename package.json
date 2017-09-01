@@ -1,7 +1,7 @@
 {
   "name": "mat-rap-verify",
   "description": "rap接口校验工具",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "repository": {
     "url": "git+https://github.com/matjs/mat-rap-verify.git"
   },
@@ -12,7 +12,8 @@
   },
   "dependencies": {
     "chalk": "^2.1.0",
-    "co": "^4.6.0"
+    "co": "^4.6.0",
+    "deep-diff": "^0.3.8"
   },
   "main": "index",
   "licenses": "MIT",
