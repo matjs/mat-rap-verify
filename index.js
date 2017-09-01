@@ -14,7 +14,7 @@ function rapVerify(opts) {
     const me = this
 
     //formData: post/json参数
-    //resBody: 接口返回的数据
+    //resBody: 接口返回的数据/buffer
     this.getParsedBody = function (formData, resBody) {
       co(function* () {
 
@@ -27,6 +27,14 @@ function rapVerify(opts) {
         } catch (error) {
           console.log(`${chalk.red(` ✗ this rap api is not defined:`)} at ${chalk.grey(me.path)}`)
           return
+        }
+
+        try {
+          //兼容jsonp格式，如 jsonp18({"data":1})
+          resBody = JSON.parse(/[^{]*({.*})[^}]*/.exec(resBody.toString())[1])
+        } catch (error) {
+          console.log(error)
+          resBody = {}
         }
 
         let params = new URLSearchParams(me.search)
@@ -44,6 +52,7 @@ function rapVerify(opts) {
     yield next
   }
 }
+
 
 /**
  * 校验请求里的参数是否与rap上填写的一致
