@@ -69,7 +69,7 @@ function checkParams(opts, rapApiData, formData, resBody, params) {
 
   if (missingParams.length) {
     console.log(chalk.red(`\n✗ 检测到有与rap上入参不匹配的接口：`))
-    console.log(`      接口：${chalk.green(me.path)}`)
+    console.log(`  接口    ：${chalk.green(me.path)}`)
     missingParams.forEach(function (param) {
       console.log(`  缺少入参：${chalk.cyan(param)}`)
     })
@@ -119,7 +119,7 @@ function checkResponse(opts, rapApiData, formData, resBody, params) {
 
     if (missingResponseKeys.length) {
       console.log(chalk.red(`\n✗ 检测到有与rap上定义的响应数据不匹配的接口：`))
-      console.log(`      接口：${chalk.green(me.path)}`)
+      console.log(`  接口    ：${chalk.green(me.path)}`)
       missingResponseKeys.forEach(function (resPath) {
         console.log(`  缺少键值：${chalk.cyan(resPath)}`)
       })
