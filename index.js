@@ -18,9 +18,8 @@ function rapVerify(opts) {
     this.getParsedBody = function (formData, resBody) {
       co(function* () {
 
-        console.log(`https://rap2api.alibaba-inc.com/interface/${opts.projectId}/${me.request.method + me.path + me.search}`) //坐等墨智rap2接口支持
-        let rapurl = 'https://rap2api.alibaba-inc.com/interface/get?id=11873' //接口未实现
-        let res = yield coRequest(rapurl)
+        let rapUrl = `https://rap2api.alibaba-inc.com/interface/get?repositoryId=${opts.projectId}&method=${me.request.method}&url=${me.path}`
+        let res = yield coRequest(rapUrl)
 
         try {
           let rapApi = JSON.parse(res.body.toString())
