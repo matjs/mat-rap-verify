@@ -1,7 +1,7 @@
 {
   "name": "mat-rap-verify",
   "description": "rap接口校验工具",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "repository": {
     "url": "git+https://github.com/matjs/mat-rap-verify.git"
   },
