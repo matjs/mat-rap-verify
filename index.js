@@ -19,7 +19,7 @@ function rapVerify(opts) {
     this.getParsedBody = (formData, resBody) => {
       co(function* () {
 
-        let rapUrl = `https://rap2api.alibaba-inc.com/interface/get?repositoryId=${opts.projectId}&method=${me.request.method}&url=${me.path}`
+        let rapUrl = `https://rap2api.alibaba-inc.com/interface/get?repositoryId=${opts.projectId}&method=${me.request.methodOrigin}&url=${me.path}`
         let res = yield coRequest(rapUrl)
         let rapApi
 
