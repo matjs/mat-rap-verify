@@ -5,7 +5,7 @@ const chalk = require('chalk')
 const diff = require('deep-diff').diff
 
 //rap接口校验
-function rapVerify(opts) {
+module.exports = function (opts) {
   return function* (next) {
 
     if (opts.rapVersion != '2') { //rap1不校验
@@ -27,7 +27,7 @@ function rapVerify(opts) {
         try {
           rapApi = JSON.parse(res.body.toString())
         } catch (error) {
-          console.log(`${chalk.red(` ✗ this rap api is not defined:`)} at ${chalk.grey(me.path)}`)
+          console.log(`${chalk.red(` ✗ 没有找到该接口在RAP上的配置:`)} at ${chalk.grey(me.path)}`)
           return
         }
 
@@ -44,6 +44,7 @@ function rapVerify(opts) {
         let rapApiData = rapApi.data
 
         //校验请求里的参数是否与rap上填写的一致
+        //参数只校验一层，无须递归
         checkParams.call(me, opts, rapApiData, formData, _resBody, params)
 
         //递归校验真实接口返回里跟rap上定义的是否一致
@@ -178,6 +179,3 @@ function rapDataConvertToObj(rp) {
   convertToObj(rp, obj)
   return obj
 }
-
-
-module.exports = rapVerify
