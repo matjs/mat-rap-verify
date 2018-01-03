@@ -36,7 +36,7 @@ module.exports = function (opts) {
           _resBody = JSON.parse(resBody.toString())
         } catch (error) {
           //兼容jsonp格式，如 jsonp18({"data":1})
-          let resBodyStr = /[^{]*({.*})[^}]*/.exec(resBody.toString())[1]
+          let resBodyStr = /.*\(?(\{(?:.|\s)*\})\)?/.exec(resBody.toString())[1]
           _resBody = JSON.parse(resBodyStr)
         }
 
