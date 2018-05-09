@@ -3,6 +3,8 @@ const coRequest = require('co-request')
 const co = require('co')
 const chalk = require('chalk')
 const diff = require('deep-diff').diff
+const minimist = require('minimist')
+const argv = minimist(process.argv.slice(2))
 
 //rap接口校验
 module.exports = function (opts) {
@@ -12,6 +14,9 @@ module.exports = function (opts) {
       return yield next
     }
 
+    //RAP项目id来自于命令行参数-i，其次取opts里的配置
+    const projectId = argv.i || opts.projectId || ''
+
     const me = this
     const methodOrigin = me.request.method
 
@@ -20,7 +25,7 @@ module.exports = function (opts) {
     this.getParsedBody = (formData, resBody) => {
       co(function* () {
 
-        let rapUrl = `https://rap2api.alibaba-inc.com/interface/get?repositoryId=${opts.projectId}&method=${methodOrigin}&url=${me.path}`
+        let rapUrl = `https://rap2api.alibaba-inc.com/interface/get?repositoryId=${projectId}&method=${methodOrigin}&url=${me.path}`
         let res = yield coRequest(rapUrl)
         let rapApi
 
