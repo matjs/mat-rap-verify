@@ -7,7 +7,7 @@ const minimist = require('minimist')
 const argv = minimist(process.argv.slice(2))
 
 //rap接口校验
-module.exports = function (opts) {
+module.exports = function (opts = {}) {
   return function* (next) {
     let rapVersion = opts.rapVersion || '2' 
     if (rapVersion != '2') { //rap1不校验
