@@ -7,8 +7,8 @@ const diff = require('deep-diff').diff
 //rap接口校验
 module.exports = function (opts) {
   return function* (next) {
-
-    if (opts.rapVersion != '2') { //rap1不校验
+    let rapVersion = opts.rapVersion || '2' 
+    if (rapVersion != '2') { //rap1不校验
       return yield next
     }
 
