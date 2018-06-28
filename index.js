@@ -41,7 +41,14 @@ module.exports = function (opts = {}) {
           _resBody = JSON.parse(resBody.toString())
         } catch (error) {
           //兼容jsonp格式，如 jsonp18({"data":1})
-          let resBodyStr = /.*\(?(\{(?:.|\s)*\})\)?/.exec(resBody.toString())[1]
+          let resBodyExecd = /.*\(?(\{(?:.|\s)*\})\)?/.exec(resBody.toString())
+          let resBodyStr = resBodyExecd && resBodyExecd[1]
+
+          //接口404等情况下，不验证
+          if (!resBodyStr) {
+            return
+          }
+
           _resBody = JSON.parse(resBodyStr)
         }
 
