@@ -32,7 +32,7 @@ module.exports = function (opts = {}) {
         try {
           rapApi = JSON.parse(res.body.toString())
         } catch (error) {
-          console.log(`${chalk.red(` ✗ 没有找到该接口在RAP上的配置:`)} at ${chalk.grey(me.path)}`)
+          console.log(`${chalk.yellow(` ⓘ 没有找到该接口在RAP上的配置:`)} at ${chalk.grey(me.path)}`)
           return
         }
 
@@ -97,7 +97,7 @@ function checkParams(opts, rapApiData, formData, resBody, params) {
   }
 
   if (missingParams.length || redundanceParams.length) {
-    console.log(chalk.red(`\n✗ 检测到有与rap上入参不匹配的接口：`))
+    console.log(chalk.yellow(`\nⓘ 检测到有与rap上入参不匹配的接口：`))
     console.log(`  接口    ：${chalk.green(me.path)}`)
     missingParams.forEach((param) => {
       console.log(`  缺少入参：${chalk.magenta(param)}`)
@@ -145,7 +145,7 @@ function checkResponse(opts, rapApiData, formData, resBody, params) {
   //非rap模拟接口时才校验
   if (!opts.isRap) {
     if (missingKeys.length || redundancyKeys.length) {
-      console.log(chalk.red(`\n✗ 检测到有与rap上定义的响应数据不匹配的接口：`))
+      console.log(chalk.yellow(`\nⓘ 检测到有与rap上定义的响应数据不匹配的接口：`))
       console.log(`  接口    ：${chalk.green(me.path)}`)
       missingKeys.forEach(function (resPath) {
         console.log(`  缺少键值：${chalk.magenta(resPath)}`)
