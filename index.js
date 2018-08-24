@@ -9,7 +9,7 @@ const argv = minimist(process.argv.slice(2))
 //rap接口校验
 module.exports = function (opts = {}) {
   return function* (next) {
-    let rapVersion = opts.rapVersion || '2' 
+    let rapVersion = opts.rapVersion || '2'
     if (rapVersion != '2') { //rap1不校验
       return yield next
     }
@@ -49,7 +49,11 @@ module.exports = function (opts = {}) {
             return
           }
 
-          _resBody = JSON.parse(resBodyStr)
+          try {
+            _resBody = JSON.parse(resBodyStr)
+          } catch (error) {
+            console.log(error)
+          }
         }
 
         let params = new URLSearchParams(me.search)
