@@ -129,7 +129,7 @@ function checkResponse(opts, rapApiData, formData, resBody, params) {
   let rapDataObj = rapDataConvertToObj(rapApiData.responseProperties)//rap数据转为object
   let missingKeys = [] //缺失的键值
   let redundancyKeys = [] //冗余的键值
-  let diffs = diff(rapDataObj, resBody) //差异对比结果
+  let diffs = diff(rapDataObj, resBody) || [] //差异对比结果
   let pathMap = {}
 
   diffs.forEach(function (item) {
