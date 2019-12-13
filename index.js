@@ -25,7 +25,7 @@ module.exports = function (opts = {}) {
     this.getParsedBody = (formData, resBody) => {
       co(function* () {
 
-        let rapUrl = `https://rap2api.alibaba-inc.com/interface/get?repositoryId=${projectId}&method=${methodOrigin}&url=${me.path}`
+        let rapUrl = `https://rap2api.alibaba-inc.com/interface/get?id=${projectId}&method=${methodOrigin}&url=${me.path}`
         let res = yield coRequest(rapUrl)
         let rapApi
 
