@@ -15,7 +15,7 @@
     "co": "^4.6.0",
     "co-request": "1.0.0",
     "deep-diff": "^0.3.8",
-    "minimist": "1.1.1"
+    "minimist": "1.2.5"
   },
   "main": "index",
   "licenses": "MIT",
